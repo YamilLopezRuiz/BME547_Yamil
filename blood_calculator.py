@@ -42,6 +42,11 @@ def LDL_input():
     LDL_value = input("Enter the LDL result:")
     LDL_value = int(LDL_value)
     return LDL_value
+
+def chol_input():
+    chol_value = input("Enter the Cholesterol result:")
+    chol_value = int(chol_value)
+    return chol_value
     
 def chol_input():
     chol_value = input("Enter the Cholesterol result:")
