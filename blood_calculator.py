@@ -3,10 +3,10 @@ def interface():
     keep_running = True
     while keep_running:
         print("Options:")
-        print("1 - HDL") #Analyze HDL levels
-        print("2 - LDL") #Analyze LDL levels
-        print("3 - cholesterol") #Analyze cholesterol levels
-        print("9 - Quit") #End the program
+        print("1 - HDL")
+        print("2 - LDL")
+        print("3 - Cholesterol")
+        print("9 - Quit")
         choice = input("Select an option:")
         if choice == "9":
             keep_running = False
@@ -48,6 +48,11 @@ def chol_input():
     chol_value = int(chol_value)
     return chol_value
     
+def chol_input():
+    chol_value = input("Enter the Cholesterol result:")
+    chol_value = int(chol_value)
+    return chol_value
+
 def HDL_analysis(HDL_int):
     if HDL_int >= 60:
         answer = "Normal"
