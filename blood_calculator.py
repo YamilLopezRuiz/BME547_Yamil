@@ -94,4 +94,5 @@ def chol_output(chol_value, chol_analy):
     print("The LDL result of {} is considered {}".format(chol_value, chol_analy))
     return
 
-interface()
+if __name__ == "__main__":
+    interface()
