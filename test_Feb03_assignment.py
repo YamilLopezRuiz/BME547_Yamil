@@ -8,6 +8,7 @@ import pytest
  ([-3, 28], [5, -12], 6, -17)  # Letters and dash
  ])
 
+
 def test_find_third_point(x, y, test, expected):
     from Feb03_assignment import find_third_point
     answer = find_third_point(x, y, test)
