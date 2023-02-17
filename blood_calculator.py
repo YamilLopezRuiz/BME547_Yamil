@@ -18,6 +18,7 @@ def interface():
             chol_driver()
     print("Program Ending")
 
+
 def HDL_driver():
     HDL_in = generic_input("HDL")
     HDL_analy = HDL_analysis(HDL_in)
@@ -60,7 +61,7 @@ def LDL_analysis(LDL_int):
     elif 160 <= LDL_int <= 189:
         answer = "High"
     else:
-        answer  = "Very High"
+        answer = "Very High"
     return answer
 
 
@@ -76,9 +77,8 @@ def chol_analysis(chol_int):
 
 def generic_output(test_name, test_value, test_analy):
     print("The {} result of {} is considered {}"
-        .format(test_name, test_value, test_analy))
-    return 
-
+          .format(test_name, test_value, test_analy))
+    return
 
 
 if __name__ == "__main__":
