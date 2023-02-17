@@ -1,6 +1,7 @@
 class Patient:
 
-    def __init__(self, patient_first_name, patient_last_name, patient_mrn, patient_age): # Initialization function
+    def __init__(self, patient_first_name, patient_last_name,
+                 patient_mrn, patient_age):  # Initialization function
         self.first_name = patient_first_name
         self.last_name = patient_last_name
         self.mrn = patient_mrn

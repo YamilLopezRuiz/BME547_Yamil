@@ -6,6 +6,7 @@ for letter in a:
 
 fruits = ["apple", "banana", "orange", "cherry", "kiwi"]
 
+
 def my_function():
     # creates an error
     for i in fruits:
