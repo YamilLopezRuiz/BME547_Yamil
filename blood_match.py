@@ -21,5 +21,6 @@ else:
 
 check_patient = {"Name": "yl625", "Match":  "No"}
 
-r_check = requests.post("http://vcm-7631.vm.duke.edu:5002/match_check", json=check_patient)
+r_check = requests.post("http://vcm-7631.vm.duke.edu:5002/match_check",
+                        json=check_patient)
 print(r_check.text)
