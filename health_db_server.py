@@ -273,8 +273,18 @@ def get_results_driver(patient_id):
     validation = validate_patient_id_from_get(patient_id)
     if validation is not True:
         return validation, 400
-    patient = db[int(patient_id)]  # already validated that this string is an int
+    patient = get_patient_from_dictionary(int(patient_id))
+    # patient = db[int(patient_id)]  # already validated this string is an int
     return patient["tests"], 200
+
+
+def get_patient_from_dictionary(patient_id):
+    # mocking example. Make up a patient
+    patient = {"id": 123, "name": "David", "tests": [("HDL", 150)]}
+    patient = db[patient_id]
+    return patient
+    # patient = db[patient_id]
+    # return patient
 
 
 def validate_patient_id_from_get(patient_id):
