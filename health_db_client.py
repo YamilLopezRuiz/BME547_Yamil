@@ -16,3 +16,11 @@ data = {"id": 1, "test_name": "HDL", "test_result": 150}
 r = requests.post(server + "/add_test", json=data)
 print(r.status_code)
 print(r.text)
+
+r = requests.get(server + "/get_results/1")
+print(r.status_code)
+print(r.text)
+answer = r.json()
+for t in answer:  # if is list, will print each value
+    print(t)  # if a dictionary, prints full dictionary?
+    # 12:18

@@ -1,5 +1,5 @@
 # health_db_server.py
-
+import logging
 from flask import Flask, request, jsonify
 
 """
@@ -266,10 +266,15 @@ def add_test_driver(in_data):
 @app.route("/get_results/<patient_id>", methods=["GET"])
 def get_get_results(patient_id):
     answer, status = get_results_driver(patient_id)
+    return jsonify(answer), status
 
 
 def get_results_driver(patient_id):
     validation = validate_patient_id_from_get(patient_id)
+    if validation is not True:
+        return validation, 400
+    patient = db[int(patient_id)]  # already validated that this string is an int
+    return patient["tests"], 200
 
 
 def validate_patient_id_from_get(patient_id):
@@ -277,7 +282,12 @@ def validate_patient_id_from_get(patient_id):
         patient_num = int(patient_id)
     except ValueError:
         return "Patien_id should be an integer"
+    if does_patient_exist_in_db(patient_num) is False:
+        return "Patient_id of {} does not exist in database"\
+            .format(patient_num)
+    return True
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename="server.log", filemode="w")
     app.run()
