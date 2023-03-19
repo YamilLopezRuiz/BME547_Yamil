@@ -17,3 +17,9 @@ print(r.text)
 r = requests.get(server + "/date")
 print(r.status_code)
 print(r.text)
+
+age = {'date': "10/10/1999", 'units': "years"}
+r = requests.post(server+ "/age", json=age)
+print(r.status_code)
+print(r)
+print(r.json())
