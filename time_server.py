@@ -3,14 +3,18 @@ import datetime
 
 app = Flask(__name__)
 
-@app.route("/get_time/<patient_id>", methods=["GET"])
+@app.route("/time", methods=["GET"])
 def find_time():
-    return
+    current_time = datetime.datetime.now()
+    time = current_time.strftime("%H:%M:%S")
+    return jsonify(time)
 
 
-@app.route("/get_date/<patient_id>", methods=["GET"])
+@app.route("/date", methods=["GET"])
 def find_date():
-    return
+    current_date = datetime.datetime.now()
+    date = current_date.strftime("%m-%d-%Y")
+    return jsonify(date)
 
 
 if __name__ == "__main__":
