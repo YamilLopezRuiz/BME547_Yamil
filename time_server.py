@@ -52,7 +52,7 @@ def find_until_next_meal(meal):
     mealtime = datetime.strptime(mealtime, "%m-%d-%Y %H:%M:%S")
     time_diff = mealtime - current_time
     difference = time_diff.seconds
-    meal_time = difference / 60
+    meal_time = difference / 3600
     meal_time = round(meal_time, 2)
     return jsonify(meal_time)
 
