@@ -4,3 +4,4 @@ pytest-pycodestyle
 requests
 flask
 datetime
+Pillow
