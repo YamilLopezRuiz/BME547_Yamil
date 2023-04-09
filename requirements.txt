@@ -3,5 +3,7 @@ pytest
 pytest-pycodestyle
 requests
 flask
+pymodm
+dnspython
 datetime
 Pillow
