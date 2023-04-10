@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 from pymodm import connect
 from PatientModel import Patient
 from pymodm import errors as pymodm_errors
-from secrets import mongodb_acct, mongodb_pswd
+from mongodb_secrets import mongodb_acct, mongodb_pswd
 """
 Database Description: A dictionary of dictionaries.
 keys -> ids for the patients

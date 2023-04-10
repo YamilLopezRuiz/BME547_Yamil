@@ -3,7 +3,7 @@ import ssl
 import pytest
 from pymodm import connect
 from PatientModel import Patient
-from secrets import mongodb_acct, mongodb_pswd
+from mongodb_secrets import mongodb_acct, mongodb_pswd
 
 connect("mongodb+srv://{}:{}@bme547.pqivgw6.mongodb.net/"
         "health_db_2023?retryWrites=true&w=majority"
