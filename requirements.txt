@@ -7,3 +7,5 @@ pymodm
 dnspython
 datetime
 Pillow
+matplotlib
+numpy
