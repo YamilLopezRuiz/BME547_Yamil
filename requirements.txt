@@ -3,4 +3,10 @@ pytest
 pytest-pycodestyle
 requests
 flask
+pymodm
+dnspython
 datetime
+Pillow
+matplotlib
+numpy
+scikit-image

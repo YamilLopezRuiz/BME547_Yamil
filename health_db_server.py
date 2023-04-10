@@ -1,7 +1,11 @@
 # health_db_server.py
 import logging
+import ssl
 from flask import Flask, request, jsonify
-
+from pymodm import connect
+from PatientModel import Patient
+from pymodm import errors as pymodm_errors
+from mongodb_secrets import mongodb_acct, mongodb_pswd
 """
 Database Description: A dictionary of dictionaries.
 keys -> ids for the patients
@@ -14,27 +18,34 @@ The "tests" list will be a series of tuples that contain the test
 name and test result
 """
 
-# Create a global variable to hold the database
-db = {}
-
 # Create an instance of the Flask server
 app = Flask(__name__)
+
+
+def init_server():
+    """ Performs set-up functions before starting server
+
+    This functions performs any needed set-up steps required for server
+    operation.  The logging system is configured.  A connection is created
+    to the MongoDB database.
+
+    """
+    logging.basicConfig(filename="server.log", filemode="w")
+    connect("mongodb+srv://{}:{}@bme547.pqivgw6.mongodb.net/"
+            "health_db_2023?retryWrites=true&w=majority"
+            .format(mongodb_acct, mongodb_pswd), ssl_cert_reqs=ssl.CERT_NONE)
 
 
 def add_patient_to_db(patient_id, patient_name, blood_type):
     """ Adds a new patient dictionary to the database
 
-    This function receives basic information on a new patient, creates a
-    dictionary containing that information, as well as an empty list to hold
-    test data to be added in the future, and adds this patient dictionary to
-    the database dictionary using the patient id as a key.
+    This function receives basic information on a new patient, creates an
+    instance of the Patient "MongoModel" class to contain that information,
+    and saves this patient information to MongoDB.  The "patient_id" is used
+    as the primary key.
 
-    The database is being stored in an internal global variable.  As this
-    variable is a dictionary that has already been created, and a dictionary
-    is a mutable data type, the use of the "global" keyword is not required.
-
-    The function also prints the database to the console so that we can see
-    how the database is changing as the server is being used.
+    The database is being stored externally to the server in an on-line
+    MongoDB database.
 
     Args:
         patient_id (int): The medical record number of the patient
@@ -42,25 +53,25 @@ def add_patient_to_db(patient_id, patient_name, blood_type):
         blood_type (str): Blood type of the patient
 
     Returns:
-        None
+        Patient: a copy of what was saved to the MongoDB database
     """
 
-    new_patient = {"id": patient_id,
-                   "name": patient_name,
-                   "blood_type": blood_type,
-                   "tests": []}
-    db[patient_id] = new_patient
-    print(db)
+    new_patient = Patient(patient_id=patient_id,
+                   patient_name=patient_name,
+                   blood_type=blood_type)
+    saved_patient = new_patient.save()
+    return saved_patient
 
 
 def add_test_to_db(patient_id, test_name, test_value):
     """Adds test result for a specific patient.
 
-    This function adds a test result to the specified patient.  The patient
-    is found in the database using the patient_id as the key.  The "tests"
-    key of the patient database is then used to access the tests list to
-    which a tuple of the test_name and test_value is appended.  The database
-    is then printed.
+    This function adds a test result to the specified patient.  First, the
+    appropriate patient record is found and downloaded from the MongoDB
+    database using the patient_id as the primary key for the search.  Next,
+    the "tests" list of the Patient class is updated by appending the new
+    test data in the form of a tuple of the test_name and test_value.  The
+    updated Patient record is then saved back to MongoDB.
 
     Args:
         patient_id (int): The medical record number of the patient
@@ -70,8 +81,10 @@ def add_test_to_db(patient_id, test_name, test_value):
     Returns:
         None
     """
-    db[patient_id]["tests"].append((test_name, test_value))
-    print(db)
+    # db[patient_id]["tests"].append((test_name, test_value))
+    x = Patient.objects.raw({"_id": patient_id}).first()
+    x.tests.append((test_name, test_value))
+    x.save()
 
 
 @app.route("/new_patient", methods=["POST"])
@@ -166,6 +179,8 @@ def validate_input_data_generic(in_data, expected_keys, expected_types):
     if type(in_data) is not dict:
         return "Input is not a dictionary"
     for key, value_type in zip(expected_keys, expected_types):
+        print(key)
+        print(type(key))
         if key not in in_data:
             return "Key {} is missing from input".format(key)
         if type(in_data[key]) is not value_type:
@@ -206,8 +221,11 @@ def does_patient_exist_in_db(patient_id):
     number
 
     This function accepts a patient id (medical record number) as an input
-    parameter.  It then checks to see if this id is a key in the database
-    dictionary.  If so, it returns True, otherwise returns False.
+    parameter.  It then queries the MongoDB database, using the patient id
+    as the primary key search parameter.  If the record does not exist, an
+    exception will be thrown which is captured in a try/except block, allowing
+    the function to return False, indicating that the record does not exist
+    in the database.  If the record does exist, the function will return True.
 
     Args:
         patient_id (int): patient medical record number to search for in the
@@ -217,10 +235,11 @@ def does_patient_exist_in_db(patient_id):
         bool: True if patient exists in database, False otherwise
 
     """
-    if patient_id in db:
-        return True
-    else:
+    try:
+        db_item = Patient.objects.raw({"_id": patient_id}).first()
+    except pymodm_errors.DoesNotExist:
         return False
+    return True
 
 
 def add_test_driver(in_data):
@@ -270,24 +289,73 @@ def get_get_results(patient_id):
 
 
 def get_results_driver(patient_id):
+    """Implements the "/get_results/<patient_id>" route
+
+    This function receives, as a string, the portion of the variable URL that
+    should contain the id number of the patient to retrieve.  The function
+    first calls a validation function to ensure that the patient id is valid
+    and that the patient exists in the database.  If not, an error message is
+    returned with a status code of 400.  If the patient id is valid and there
+    is a patient with that id, a call is made to a function to retrieve that
+    patient, and the patient dictionary is returned with a status code of 200.
+    
+    Args:
+        patient_id (str): patient id found in variable URL
+
+    Returns:
+        str, int: error message and 400 status code if patient_id parameter is
+                    invalid, or
+        list, int: list of test results and 200 status code if patient_id
+                    matches an entry in database
+    """
     validation = validate_patient_id_from_get(patient_id)
     if validation is not True:
         return validation, 400
-    patient = get_patient_from_dictionary(int(patient_id))
-    # patient = db[int(patient_id)]  # already validated this string is an int
-    return patient["tests"], 200
+    test_list = get_patient_test_results_from_database(int(patient_id))
+    return test_list, 200
 
 
-def get_patient_from_dictionary(patient_id):
-    # mocking example. Make up a patient
-    patient = {"id": 123, "name": "David", "tests": [("HDL", 150)]}
-    patient = db[patient_id]
-    return patient
-    # patient = db[patient_id]
-    # return patient
+def get_patient_test_results_from_database(patient_id):
+    """Retrieves a patient test results from the database based on the given
+       id.
+    
+    This function takes the patient_id sent as a parameter and queries the
+    MongoDB database using this id to find the patient of interest.  The
+    patient_id has already been verified to be in the database, so the query
+    is not done in a try/except block.  Once the record is retrieved, the
+    "tests" list is returned.
+    
+    Note: if the database is not yet available for use, this function could be
+    "mocked" to provide a made-up response.
+    
+    Args:
+        patient_id (int): the patient id of interest
+    
+    Returns:
+        list: patient test results
+    """
+    db_item = Patient.objects.raw({"_id": patient_id}).first()
+    return db_item.tests
 
 
 def validate_patient_id_from_get(patient_id):
+    """Validates that received patient id is an integer and that patient exists
+    
+    This function validates the information received by the variable URL
+    "/get_results/<patient_id>".  First, it checks that the "patient_id"
+    received represents a number.  It then checks that a patient exists in the
+    database with that number.  If either of these conditions is not true,
+    an error message string is returned.  If both are true, a value of True
+    is returned to indicate a valid input.
+    
+    Args:
+        patient_id (str): The portion of the variable URL that should
+            contain the patient ID
+    
+    Returns:
+        str: error message if validation fails, or
+        bool: True if validation passes
+    """
     try:
         patient_num = int(patient_id)
     except ValueError:
@@ -299,5 +367,5 @@ def validate_patient_id_from_get(patient_id):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="server.log", filemode="w")
+    init_server()
     app.run()
