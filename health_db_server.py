@@ -57,7 +57,7 @@ def add_patient_to_db(patient_id, patient_name, blood_type):
     """
 
     new_patient = Patient(patient_id=patient_id,
-                   oatient_name=patient_name,
+                   patient_name=patient_name,
                    blood_type=blood_type)
     saved_patient = new_patient.save()
     return saved_patient
@@ -368,5 +368,4 @@ def validate_patient_id_from_get(patient_id):
 
 if __name__ == '__main__':
     init_server()
-    logging.basicConfig(filename="server.log", filemode="w")
     app.run()
